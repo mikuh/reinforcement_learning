@@ -26,7 +26,9 @@ def value_iteration(env, discount_factor=1.0,  theta=0.00001):
 
     # 初始化状态价值V
     V = np.zeros(env.nS)
+    n = 0
     while True:
+        n += 1
         # Stopping condition
         delta = 0
         # Update each state...
@@ -37,10 +39,10 @@ def value_iteration(env, discount_factor=1.0,  theta=0.00001):
             delta = max(delta, np.abs(best_action_value - V[s]))
             # 更新状态价值函数
             V[s] = best_action_value
+        print("第{}次迭代".format(n))
         # 达到精度
         if delta < theta:
             break
-
     # 使用最优价值函数创建一个确定的策略
     policy = np.zeros([env.nS, env.nA])
     for s in range(env.nS):

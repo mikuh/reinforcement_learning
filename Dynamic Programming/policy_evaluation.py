@@ -14,8 +14,9 @@ def policy_evaluation(policy, env, discount_factor=1.0, theta=0.00001):
     """
     # 初始化状态价值V
     V = np.zeros(env.nS)
-
+    n = 0
     while True:
+        n +=1
         delta = 0
         # For each state, perform a "full backup"
         for s in range(env.nS):
@@ -26,8 +27,10 @@ def policy_evaluation(policy, env, discount_factor=1.0, theta=0.00001):
 
             delta = max(delta, np.abs(v - V[s]))    # 所有状态点最大的变化
             V[s] = v
+        print("第{}次迭代".format(n))
         if delta < theta:
             break
+
     return np.array(V)
 
 

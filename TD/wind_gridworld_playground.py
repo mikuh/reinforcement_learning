@@ -16,6 +16,6 @@ env = WindyGridworldEnv()
 print(env.reset())
 env.render()
 
-for i in range(12):
-    print(env.step(RIGHT))
-    env.render()
+# for i in range(12):
+#     print(env.step(RIGHT))
+#     env.render()

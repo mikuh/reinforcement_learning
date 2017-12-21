@@ -40,7 +40,7 @@ def mc_prediction(policy, env, num_episodes, discount_factor=1.0):
             print("\rEpisode {}/{}.".format(i_episode, num_episodes), end="")
             sys.stdout.flush()
 
-        # 生成一个 episode.
+        # 生成一个 episode. 是一个 [(state, action, reward),...]
         # An episode is an array of (state, action, reward) tuples
         episode = []
         state = env.reset()
@@ -52,15 +52,18 @@ def mc_prediction(policy, env, num_episodes, discount_factor=1.0):
                 break
             state = next_state
 
-        # Find all states the we've visited in this episode
-        # We convert each state to a tuple so that we can use it as a dict key
+        # 找到所有访问过的 episode
+        # 将所有的state转换成tuple好作为dict的key
         states_in_episode = set([tuple(x[0]) for x in episode])
         for state in states_in_episode:
-            # Find the first occurance of the state in the episode
-            first_occurence_idx = next(i for i, x in enumerate(episode) if x[0] == state)
-            # Sum up all rewards since the first occurance
-            G = sum([x[2] * (discount_factor ** i) for i, x in enumerate(episode[first_occurence_idx:])])
+            # Find the first occurrence of the state in the episode
+            # 找到episode中第一次出现的state的索引
+            first_occurrence_idx = next(i for i, x in enumerate(episode) if x[0] == state)
+            # Sum up all rewards since the first occurrence
+            # 从第一次出现开始的所有奖励求和
+            G = sum([x[2] * (discount_factor ** i) for i, x in enumerate(episode[first_occurrence_idx:])])
             # Calculate average return for this state over all sampled episodes
+            # 在所有的episodes上计算平均值
             returns_sum[state] += G
             returns_count[state] += 1.0
             V[state] = returns_sum[state] / returns_count[state]
