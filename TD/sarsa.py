@@ -1,8 +1,20 @@
-import gym
+"""
+sarsa算法总结
+sarsa 是 on-policy方法 这种方法并不是求出最优策略 而是接近最优策略，因为为了能接近最优策略保留了探索
+对所有的状态行为对s->a随机初始化行动价值函数Q,并且终止状态的Q=0
+循环 n个episodes中每个episode
+    初始化 S
+    在S 通过epsilon-greedy 策略指定一个策略policy，
+    循环 episode中的每一步
+        基于起始状态S，根据当前epsilon-greedy,Q 得到policy, 根据policy采取行动A， 观察到即时回报R，和状态转移S'
+        在S' 在通过 epsilon-greedy 指定的策略policy 采取行动 A'
+        这样 我们就得到了S 新的估计行动价值 td_target = reward + discount_factor * Q[next_state][next_action]
+        然后通过这个公式来更新状态行动价值 Q[state][action] += alpha * (td_target - Q[state][action])
+        如果达到指定步数或者达到终止状态，就结束这个episode
+"""
 import itertools
 import matplotlib
 import numpy as np
-import pandas as pd
 import sys
 
 
@@ -55,6 +67,8 @@ def sarsa(env, num_episodes, discount_factor=1.0, alpha=0.5, epsilon=0.1):
         A tuple (Q, stats).
         Q is the optimal action-value function, a dictionary mapping state -> action values.
         stats is an EpisodeStats object with two numpy arrays for episode_lengths and episode_rewards.
+        Q 是行动价值函数，一个映射字典 state映射到action value
+        stats 是一个 episodeStats对象 由 episode长度 和 episode奖励 两部分组成
     """
 
     # The final action-value function.
@@ -62,11 +76,12 @@ def sarsa(env, num_episodes, discount_factor=1.0, alpha=0.5, epsilon=0.1):
     Q = defaultdict(lambda: np.zeros(env.action_space.n))
 
     # Keeps track of useful statistics
+    # 追踪每一个episode的步长和奖励用于统计
     stats = plotting.EpisodeStats(
         episode_lengths=np.zeros(num_episodes),
         episode_rewards=np.zeros(num_episodes))
 
-    # The policy we're following
+    # 我们遵循的策略
     policy = make_epsilon_greedy_policy(Q, epsilon, env.action_space.n)
 
     for i_episode in range(num_episodes):
@@ -75,25 +90,26 @@ def sarsa(env, num_episodes, discount_factor=1.0, alpha=0.5, epsilon=0.1):
             print("\rEpisode {}/{}.".format(i_episode + 1, num_episodes), end="")
             sys.stdout.flush()
 
-        # Reset the environment and pick the first action
+        # 重置环境和获取第一个行动
+        # 因为在WindyGridworldEnv类中定义的概率分布，初始都会从(3,0)这个固定点开始
         state = env.reset()
         action_probs = policy(state)
         action = np.random.choice(np.arange(len(action_probs)), p=action_probs)
 
-        # One step in the environment
+        # 一个episode中的一步
         for t in itertools.count():
-            # Take a step
+            # 执行一步看看
             next_state, reward, done, _ = env.step(action)
 
-            # Pick the next action
+            # 获取下一个行动
             next_action_probs = policy(next_state)
             next_action = np.random.choice(np.arange(len(next_action_probs)), p=next_action_probs)
 
-            # Update statistics
-            stats.episode_rewards[i_episode] += reward
-            stats.episode_lengths[i_episode] = t
+            # 更新统计表
+            stats.episode_rewards[i_episode] += reward      # 总回报
+            stats.episode_lengths[i_episode] = t            # 总步数
 
-            # TD Update
+            # TD 更新
             td_target = reward + discount_factor * Q[next_state][next_action]
             td_delta = td_target - Q[state][action]
             Q[state][action] += alpha * td_delta
@@ -105,3 +121,8 @@ def sarsa(env, num_episodes, discount_factor=1.0, alpha=0.5, epsilon=0.1):
             state = next_state
 
     return Q, stats
+
+
+Q, stats = sarsa(env, 200)
+
+plotting.plot_episode_stats(stats)
