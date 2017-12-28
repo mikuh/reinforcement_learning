@@ -2,17 +2,11 @@
 Double Q Learning 算法
 """
 
-import gym
 import itertools
 import matplotlib
 import numpy as np
 import pickle
 import sys
-
-
-if "../" not in sys.path:
-  sys.path.append("../")
-
 from collections import defaultdict
 from lib.envs.cliff_walking import CliffWalkingEnv
 from lib import plotting
